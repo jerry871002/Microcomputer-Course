@@ -1,0 +1,21 @@
+    ORG 0000H
+    AJMP MAIN
+    ORG 0050H
+MAIN : 
+    MOV A, #7FH
+LOOP :
+    MOV P1, A 
+    RR A 
+    ACALL DELAY
+    JMP LOOP
+DELAY:
+    MOV R5, #FFH 
+DELAY1:
+    MOV R6, #FFH 
+DELAY2:
+    MOV R7, #05H 
+DELAY3:
+    DJNZ R7, DELAY3 
+    DJNZ R6, DELAY2 
+    DJNZ R5, DELAY1 
+    RET
