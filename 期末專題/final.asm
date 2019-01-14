@@ -6,20 +6,20 @@
     JMP INT1INTERUPT
     ORG 0050H
 INITIAL:
-    MOV 31H, #0FEH
+    MOV 31H, #0FEH          ;跑馬燈初始值
     MOV A, 31H
-    MOV P1, A
-    MOV R4, #255
+    MOV P1, A               ;跑馬燈輸出
+    MOV R4, #255            ;控制多久觸發一次Trig及跑馬燈右移
 
-    CLR P3.2
+    CLR P3.2                ;蜂鳴器輸出
+    CLR P3.7                ;用來產生半週期為29us的方波
 
     MOV DPTR, #NUMTABLE
     SETB IT1				;Falling edge trigger for interrupt 1 (TCON.2)
     SETB PX1				;Set INT1 interrupt priority (IP.2)
     SETB EA					;Enable all interrupt (IE.7)
     SETB EX1				;Enable INT1 interrupt (IE.2)
-    SETB ET0				;Enable Timer/Counter 0 interrupt (IE.1)
-    CLR P3.7                ;用來產生半週期為29us的方波
+    SETB ET0				;Enable Timer/Counter 0 interrupt (IE.1)    
     CLR TF0					;TIMER 0 OVERFLOW FLAG (TCON.5)
     CLR TF1					;COUNTER 1 OVERFLOW FLAG (TCON.7)
     MOV TMOD, #11100010B	;Counter 1, Mode 2, enable when INT1 = 1; Timer 0, Mode 2
@@ -38,41 +38,38 @@ SHOW:
     MOV P0, #0FBH           ;百位
 
     MOV A, R2
-    MOVC A, @A+DPTR
+    MOVC A, @A+DPTR         ;查Table
     MOV P2, A
     MOV R5, #1
     CALL DELAY
-    MOV P2, #0FFH
+    MOV P2, #0FFH           ;避免殘影
 
     MOV P0, #0FDH           ;十位
 
     MOV A, R1
-    MOVC A, @A+DPTR
+    MOVC A, @A+DPTR         ;查Table
     MOV P2, A
     MOV R5, #1
     CALL DELAY
-    MOV P2, #0FFH
+    MOV P2, #0FFH           ;避免殘影
 
     MOV P0, #0FEH           ;個位
 
     MOV A, R0
-    MOVC A, @A+DPTR
+    MOVC A, @A+DPTR         ;查Table
     MOV P2, A
     MOV R5, #1
     CALL DELAY
-    MOV P2, #0FFH
+    MOV P2, #0FFH           ;避免殘影
 
-    ;MOV A, 31H
-    ;MOV P1, A
-
-    DJNZ R4, SHOW
+    DJNZ R4, SHOW           ;顯示255次才(1)觸發Trig一次(2)跑馬燈右移一格
 
     MOV A, 31H
-    RR A
+    RR A                    ;跑馬燈右移一格
     MOV 31H, A
     MOV P1, A
 
-    SETB P3.4
+    SETB P3.4               ;給超音波模組Trig
     MOV R5, #1
     CALL DELAY
     CLR P3.4
@@ -82,13 +79,13 @@ SHOW:
     JMP SHOW
 
 TIMER0INTERUPT:
-    CPL P3.7
+    CPL P3.7                ;產生半週期為29us的方波
     CLR TF0
-    CJNE R3, #255, SOUND
+    CJNE R3, #255, SOUND    ;距離超過100就不發出聲音
     JMP TIMERRETURN
 SOUND:
     DJNZ R3, TIMERRETURN
-    CPL P3.2
+    CPL P3.2                ;產生蜂鳴器需要的方波
     MOV R3, 30H
 TIMERRETURN:
     RETI
@@ -105,7 +102,6 @@ INT1INTERUPT:
     MOV R0, B               ;個位數
 
     CJNE R2, #0, NEXT1
-
     CJNE R1, #5, NEXT2
 NEXT2:
     JC NEXT3
@@ -139,13 +135,13 @@ SETSOUND:
     MOV B, #2
     DIV AB
     ADD A, #17
-    MOV R3, A
-    MOV 30H, A
+    MOV R3, A               ;R3跟30H儲存音調的參數
+    MOV 30H, A              ;公式是取距離的後兩位除以2的商加17
 
-    CJNE R2, #0, NEXT6
+    CJNE R2, #0, NEXT6      ;若距離大於100另外設定
     JMP INT1RETURN
 NEXT6:
-    MOV R3, #255
+    MOV R3, #255            ;距離大於100
     MOV 30H, #255
 
 INT1RETURN:
