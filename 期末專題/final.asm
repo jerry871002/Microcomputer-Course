@@ -19,7 +19,7 @@ INITIAL:
     SETB PX1				;Set INT1 interrupt priority (IP.2)
     SETB EA					;Enable all interrupt (IE.7)
     SETB EX1				;Enable INT1 interrupt (IE.2)
-    SETB ET0				;Enable Timer/Counter 0 interrupt (IE.1)    
+    SETB ET0				;Enable Timer/Counter 0 interrupt (IE.1)
     CLR TF0					;TIMER 0 OVERFLOW FLAG (TCON.5)
     CLR TF1					;COUNTER 1 OVERFLOW FLAG (TCON.7)
     MOV TMOD, #11100010B	;Counter 1, Mode 2, enable when INT1 = 1; Timer 0, Mode 2
@@ -33,8 +33,6 @@ INITIAL:
     SETB TR1                ;Counter 1開始運作
 
 SHOW:
-
-
     MOV P0, #0FBH           ;百位
 
     MOV A, R2
@@ -132,11 +130,12 @@ SETSOUND:
     MOV B, #10
     MUL AB
     ADD A, R0
-    MOV B, #2
-    DIV AB
-    ADD A, #17
+    ;MOV B, #2
+    ;DIV AB
+    ;ADD A, #17
+    ADD A, #15
     MOV R3, A               ;R3跟30H儲存音調的參數
-    MOV 30H, A              ;公式是取距離的後兩位除以2的商加17
+    MOV 30H, A              ;公式是取距離的後兩位加15
 
     CJNE R2, #0, NEXT6      ;若距離大於100另外設定
     JMP INT1RETURN
